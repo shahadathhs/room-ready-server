@@ -72,6 +72,20 @@ async function run() {
       res.send(result);
     })
 
+    app.patch("/rooms/:id", async(req, res) => {
+      const id = req.params.id;
+      const filter ={ _id : new ObjectId(id)}
+      const room = req.body;
+      console.log(room)
+      const updatedDoc = {
+        $set:{
+          availability: room.availability
+        }
+      }
+      const result =await roomsCollection.updateOne(filter,updatedDoc)
+      res.send(result)
+    })
+
     //bookings related api
     app.post("/bookings", async(req,res) => {
       const booking = req.body;
