@@ -43,14 +43,10 @@ async function run() {
     // Get the database and collection on which to run the operation
     const database = client.db("roomReadyDB");
     const roomsCollection = database.collection("rooms");
+    const bookingsCollection = database.collection("bookings");
 
 
     // rooms related api
-    // app.get("/rooms", async(req, res) => {
-    //   const cursor = roomsCollection.find();
-    //   const result = await cursor.toArray();
-    //   res.send(result);
-    // }) 
     app.get("/rooms", async (req, res) => {
       const { minPrice, maxPrice } = req.query;
       let filter = {};
@@ -67,7 +63,6 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
-    
 
     app.get("/rooms/:id", async(req, res) => {
       const id = req.params.id;
@@ -75,6 +70,13 @@ async function run() {
       
       const result = await roomsCollection.findOne(query);
       res.send(result);
+    })
+
+    //bookings related api
+    app.post("/bookings", async(req,res) => {
+      const booking = req.body;
+      const result = await bookingsCollection.insertOne(booking)
+      res.send(result)
     })
 
     // Send a ping to confirm a successful connection
