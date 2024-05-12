@@ -134,6 +134,40 @@ async function run() {
       res.send(result)
     })
 
+    app.put("/rooms/:id/add-review", (req, res) => {
+      const id = req.params.id;
+      const review = req.body;
+    
+      // Fetch the room object from the database
+      roomsCollection.findOne({ _id: new ObjectId(id) })
+        .then(room => {
+          if (!room) {
+            return res.status(404).json({ error: "Room not found" });
+          }
+    
+          // Add the new review to the reviews array
+          room.reviews.push(review);
+    
+          // Update the room object in the database
+          roomsCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { reviews: room.reviews } }
+          )
+            .then(() => {
+              res.json({ message: "Review added successfully", review: review });
+            })
+            .catch(error => {
+              console.error("Error updating room:", error);
+              res.status(500).json({ error: "Internal server error" });
+            });
+        })
+        .catch(error => {
+          console.error("Error fetching room:", error);
+          res.status(500).json({ error: "Internal server error" });
+        });
+    });
+    
+
     //bookings related api
     app.get("/bookings", verifyToken, async(req, res) => {
       console.log("requestedData/userInfo", req.query);
