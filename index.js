@@ -73,6 +73,7 @@ async function run() {
     const database = client.db("roomReadyDB");
     const roomsCollection = database.collection("rooms");
     const bookingsCollection = database.collection("bookings");
+    const reviewsCollection = database.collection("reviews")
 
     //creating Token
     app.post("/jwt", logger, async (req, res) => {
@@ -214,6 +215,13 @@ async function run() {
         }
       }
       const result =await bookingsCollection.updateOne(filter,updatedDoc)
+      res.send(result)
+    })
+
+    //review related api
+    app.post("/reviews", async(req,res) => {
+      const review = req.body;
+      const result = await reviewsCollection.insertOne(review)
       res.send(result)
     })
 
