@@ -75,6 +75,7 @@ async function run() {
     const bookingsCollection = database.collection("bookings");
     const reviewsCollection = database.collection("reviews");
     const newsletterCollection = database.collection("newsletters");
+    const contactUsCollection = database.collection("contactUs")
 
     //creating Token
     app.post("/jwt", logger, async (req, res) => {
@@ -237,6 +238,13 @@ async function run() {
     app.post("/newsletters", async(req,res) => {
       const newsletter = req.body;
       const result = await newsletterCollection.insertOne(newsletter)
+      res.send(result)
+    })
+
+    //contact us related api
+    app.post("/contactUs", async(req,res) => {
+      const contact = req.body;
+      const result = await contactUsCollection.insertOne(contact)
       res.send(result)
     })
 
