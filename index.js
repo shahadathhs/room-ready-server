@@ -73,7 +73,8 @@ async function run() {
     const database = client.db("roomReadyDB");
     const roomsCollection = database.collection("rooms");
     const bookingsCollection = database.collection("bookings");
-    const reviewsCollection = database.collection("reviews")
+    const reviewsCollection = database.collection("reviews");
+    const newsletterCollection = database.collection("newsletters");
 
     //creating Token
     app.post("/jwt", logger, async (req, res) => {
@@ -231,6 +232,13 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    // newsletter related api
+    app.post("/newsletters", async(req,res) => {
+      const newsletter = req.body;
+      const result = await newsletterCollection.insertOne(newsletter)
+      res.send(result)
+    })
 
     // Send a ping to confirm a successful connection
     //await client.db("admin").command({ ping: 1 });
