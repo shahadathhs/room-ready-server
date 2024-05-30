@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const stripe = require("stripe");
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
@@ -19,7 +20,10 @@ app.use(
   })
 );
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
+
+// Initialize Stripe with the secret key
+const stripeInstance = stripe(process.env.STRIPE_SECRET_KEY)
 
 const user = process.env.DB_USER
 const password = process.env.DB_PASS
@@ -75,7 +79,8 @@ async function run() {
     const bookingsCollection = database.collection("bookings");
     const reviewsCollection = database.collection("reviews");
     const newsletterCollection = database.collection("newsletters");
-    const contactUsCollection = database.collection("contactUs")
+    const contactUsCollection = database.collection("contactUs");
+    const paymentsCollection = database.collection('payments');
 
     //creating Token
     app.post("/jwt", logger, async (req, res) => {
@@ -245,6 +250,59 @@ async function run() {
     app.post("/contactUs", async(req,res) => {
       const contact = req.body;
       const result = await contactUsCollection.insertOne(contact)
+      res.send(result)
+    })
+
+    // payment related api
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+    
+      // Check if the price is provided and is a number
+      if (!price || isNaN(price)) {
+        console.error("Invalid price:", price);
+        return res.status(400).send({ error: 'Price is required and must be a number' });
+      }
+    
+      const amount = parseInt(price * 100); // Amount in cents
+    
+      try {
+        // Create a PaymentIntent with the order amount and currency
+        const paymentIntent = await stripeInstance.paymentIntents.create({
+          amount: amount,
+          currency: "usd",
+          payment_method_types: ["card", "link"],
+        });
+    
+        res.send({
+          clientSecret: paymentIntent.client_secret,
+        });
+        console.log('Payment SUCCESS', req.body)
+      } catch (error) {
+        console.error('Error creating payment intent:', error);
+        res.status(500).send({ error: 'Internal Server Error' });
+      }
+    });
+
+    app.post('/payments', async(req, res) => {
+      const payment = req.body;
+      const paymentResult = await paymentsCollection.insertOne(payment);
+      
+      //carefully delete bookings item
+      console.log('paymentInfo', payment)
+      const query = { 
+        _id: { 
+          $in: payment.bookingsIds.map(id => new ObjectId(id)) 
+        } 
+      };
+      const deleteResult = await bookingsCollection.deleteMany(query)
+      
+      res.send({paymentResult, deleteResult})
+    })
+
+    app.get("/payments", async(req, res) => {
+      const email = req.query.email;
+      const query = {email : email}
+      const result = await paymentsCollection.find(query).toArray();
       res.send(result)
     })
 
