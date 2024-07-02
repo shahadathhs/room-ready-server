@@ -1,7 +1,7 @@
 
 # RoomReady
 
-- Live Site URL: [RoomReady](https://donatelife-f661c.web.app)
+- Live Site URL: [RoomReady](https://eleventh-a-roomready.web.app)
 
 - Tools & Technology
    - Node.js
@@ -20,7 +20,7 @@
 
 ### Running the Frontend Locally
 
-- Visit client repository: [Client Repository on GitHub](https://github.com/shahadathhs/room-ready-server)
+- Visit client repository: [Client Repository on GitHub](https://github.com/shahadathhs/room-ready-client)
 
 ### Running the Backend Locally
 
